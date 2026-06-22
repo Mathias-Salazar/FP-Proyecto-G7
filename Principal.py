@@ -6,6 +6,7 @@ from Proveedores import *
 from Clientes import *
 from Ventas import *
 from datetime import datetime
+import random
 
 cont_try = 0
 while True: #Sistema de inicio de sesion
@@ -90,10 +91,12 @@ while True:
                         break
                     else:
                         print('Intentelo nuevamente')
+                print()
                 
                 dniventa = 0
                 dniventa = Dni(dniventa)
                 Repeticua = False
+                print()
                 
                 if RepeDNI(dniventa):
                     Repeticua = True
@@ -126,11 +129,12 @@ while True:
                     producVender = productos[productoVen][marcaVen]
                     elProducto = (productoVen + ' ' + marcaVen).title()
                     
-                    listaProductos.append(elProducto)
-                    listaPrecioUnit.append(producVender['precio'])
-                    
                     cantidadVender = 0
                     if producVender['cantidad'] > 0:
+                        
+                        listaProductos.append(elProducto)
+                        listaPrecioUnit.append(producVender['precio'])
+                        
                         while True:
                             try:
                                 cantidadVender = int(input('Ingrese cantidad a vender: '))
@@ -218,6 +222,8 @@ while True:
                     subtotal += totalbolsa
                     totalfinal += totalbolsa
                 
+                print(f'\nMonto total: {totalfinal:.2f}')
+                
                 metodoPago = ''
                 print('\n* Tarjeta Debito')
                 print('* Tarjeta Credito')
@@ -232,6 +238,19 @@ while True:
                     else:
                         print('Metodo no encontrado')
                 print()
+                
+                cuotapago = 0
+                if metodoPago == 'Tarjeta Credito':
+                    while True:
+                        try:
+                            cuotapago = int(input('Ingrese cantidad de cuotas: '))
+                            
+                            if cuotapago > 0:
+                                break
+                            else:
+                                print('Intentelo otra vez')
+                        except ValueError:
+                            print()
                 
                 montoPagoEF = 0
                 if metodoPago == 'Efectivo':
@@ -251,12 +270,19 @@ while True:
 
                 fechaActual = ahora.strftime("%d/%m/%Y")
                 horaActual = ahora.strftime("%H:%M:%S")
-                    
+                
+                numeramdon = 0
+                while True:
+                    numeramdon = random.randint(1000000, 9999999)
+                    break
+
+                codigoVenta = f'FA2026-{numeramdon}'
+                
                 #DETALLE DE LA COMPRA--
                 
                 print('\n' + '—' * 56)
                 print('     ' * 4 + ' DETALLE COMPRA ' + '     ' * 4)
-                print('     ' * 4 + f'{codigoVenta}' + '     ' * 4)
+                print('     ' * 4 + f' {codigoVenta}' + '     ' * 4)
                 print()
                 
                 if TiCompra == 'BOLETA':
@@ -275,12 +301,19 @@ while True:
                     
                     i += 1
                 
-                print(f'*** Subtotal:      S/.{subtotal:.2f}')
+                print(f'\n*** Subtotal:      S/.{subtotal:.2f}')
                 if Repeticua == True:
                     print(f'*** Descuento:     S/.{subtotalDescuento:.2f}')
                 print(f'*** Total Final:   S/.{totalfinal:.2f}')
+                
                 if metodoPago == 'Efectivo':
+                    print(f'\n*** {metodoPago}       S/.{montoPagoEF:.2f}')
                     print(f'*** Vuelto:       S/.{(montoPagoEF - totalfinal):.2f}')
+                elif metodoPago == 'Tarjeta Credito':
+                    print(f'\n*** {metodoPago}       {cuotapago} cuota(s)')
+                else:
+                    print(f'\n*** {metodoPago}')
+                
                 print()
                 print('—' * 56)
                 print('\n' + '    ' * 4 + ' GRACIAS POR SU COMPRA' + '    ' * 4 + '\n')
@@ -367,28 +400,31 @@ while True:
                         print('Despues:')
                         print(f'{tipomerc.upper()} {nomarc.upper()} | Cantidad: {product['cantidad']}\n')
                     case 3:
-                        disminuir = 0
-                        while True:
-                            try:
-                                disminuir = int(input('Cantidad a disminuir: '))
-                                
-                                if disminuir > 0:
-                                    if disminuir > product['cantidad']:
-                                        print('No hay suficiente stock')
+                        if product['cantidad'] > 0:
+                            disminuir = 0
+                            while True:
+                                try:
+                                    disminuir = int(input('Cantidad a disminuir: '))
+                                    
+                                    if disminuir > 0:
+                                        if disminuir > product['cantidad']:
+                                            print('No hay suficiente stock')
+                                        else:
+                                            break
                                     else:
-                                        break
-                                else:
-                                    print('ingrese un número mayor a cero')
-                            except:
-                                print('No es un número...')
-                        print()
-                        
-                        print('Stock actualizado:')
-                        print('Antes:')
-                        print(f'{tipomerc.upper()} {nomarc.upper()} | Cantidad: {product['cantidad']}')
-                        product['cantidad'] -= disminuir
-                        print('Despues:')
-                        print(f'{tipomerc.upper()} {nomarc.upper()} | Cantidad: {product['cantidad']}\n')
+                                        print('ingrese un número mayor a cero')
+                                except:
+                                    print('No es un número...')
+                            print()
+                            
+                            print('Stock actualizado:')
+                            print('Antes:')
+                            print(f'{tipomerc.upper()} {nomarc.upper()} | Cantidad: {product['cantidad']}')
+                            product['cantidad'] -= disminuir
+                            print('Despues:')
+                            print(f'{tipomerc.upper()} {nomarc.upper()} | Cantidad: {product['cantidad']}\n')
+                        else:
+                            print('El producto no tiene stock, no se puede reducir\n')
         case 3:
             while True:
             
@@ -417,14 +453,18 @@ while True:
                 match(meRep):
                     case 1:
                         ventasHoy = ReportesVentasTotal['junio']['semana 4']['miercoles']
-
+                        
                         print('REPORTE DE HOY\n')
-                        for codigo, detalle in ventasHoy.items():
-                            print(f'Codigo Compra: {codigo}')
-                            print(f'DNI: {detalle['dni']}')
-                            print(f'Fecha: {detalle['fecha']}')
-                            print(f'Hora: {detalle['hora']}')
-                            print(f'Total: S/.{detalle["total"]:.2f}\n')
+                        
+                        if len(ventasHoy) == 0:
+                            print('No se realizó ninguna venta hoy.\n')
+                        else:
+                            for codigo, detalle in ventasHoy.items():
+                                print(f'Codigo Compra: {codigo}')
+                                print(f'DNI: {detalle['dni']}')
+                                print(f'Fecha: {detalle['fecha']}')
+                                print(f'Hora: {detalle['hora']}')
+                                print(f'Total: S/.{detalle["total"]:.2f}\n')
                     case 2:
                         print('1. Semana 1')
                         print('2. Semana 2')
@@ -475,7 +515,7 @@ while True:
             
                 while True:
                     print('===' * 6 + ' MENÚ PROVEEDORES ' + '===' * 6 + '\n') #Menu de los proveedores 4.
-                    print('1. Registro de proveedor')
+                    print('1. Registro de proveedor (actualizar)')
                     print('2. Lista de Proveedores')
                     print('3. Salir del menú')
                     break
@@ -656,6 +696,4 @@ while True:
                         break
         case 6:
             break
-
-
 print()
